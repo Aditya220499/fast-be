@@ -1,13 +1,24 @@
-# models.py
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-class Item(BaseModel):
-    name: str = Field(...)
-    description: Optional[str] = None
-    price: float
+class TodoItem(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field(..., min_length=1)
+    category: str
+    priority: str = Field(..., pattern='^(Low|Medium|High)$')
+    status: str = Field(..., pattern='^(Active|Completed|Archived)$')
+    reminder_at: Optional[datetime] = None
+    tags: List[str] = []
+    attachments: List[str] = []
+    is_favorite: bool = False
 
-class ItemUpdate(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    price: Optional[float]
+    # These fields will be handled by backend
+    id: Optional[str] = None  # MongoDB ObjectId will be converted to string
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
